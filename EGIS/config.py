@@ -1,0 +1,27 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Base URLs and credentials
+NESSUS_URL = os.getenv("NESSUS_URL")
+NESSUS_ACCESSKEY = os.getenv("NESSUS_ACCESSKEY")
+NESSUS_SECRETKEY = os.getenv("NESSUS_SECRETKEY")
+
+NETBOX_URL = os.getenv("NETBOX_URL")
+NETBOX_TOKEN = os.getenv("NETBOX_TOKEN")
+
+ELASTIC_URL = os.getenv("ELASTIC_URL")
+ELASTIC_INDEX = os.getenv("ELASTIC_INDEX")
+ELASTIC_APIKEY = os.getenv("ELASTIC_APIKEY")
+
+os.environ["HTTP_PROXY"] = os.getenv("HTTP_PROXY")
+os.environ["HTTPS_PROXY"] = os.getenv("HTTPS_PROXY")
+
+# File storage
+MEDIA_ROOT = "media"
+SCAN_REPORTS_DIR = os.path.join(MEDIA_ROOT, "scan_reports")
+MARKDOWN_REPORTS_DIR = os.path.join(MEDIA_ROOT, "markdown_reports")
+
+os.makedirs(SCAN_REPORTS_DIR, exist_ok=True)
+os.makedirs(MARKDOWN_REPORTS_DIR, exist_ok=True) 
