@@ -15,9 +15,6 @@ ELASTIC_URL = os.getenv("ELASTIC_URL")
 ELASTIC_INDEX = os.getenv("ELASTIC_INDEX")
 ELASTIC_APIKEY = os.getenv("ELASTIC_APIKEY")
 
-os.environ["HTTP_PROXY"] = os.getenv("HTTP_PROXY")
-os.environ["HTTPS_PROXY"] = os.getenv("HTTPS_PROXY")
-
 # File storage
 MEDIA_ROOT = "media"
 SCAN_REPORTS_DIR = os.path.join(MEDIA_ROOT, "scan_reports")

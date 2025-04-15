@@ -1,0 +1,116 @@
+{% extends "base.html.j2" %}
+
+{% block content %}
+<div class="header">
+    <div class="title">EGIS</div>
+    <div class="org-name">{{ org_name }}</div>
+</div>
+
+<h2>Executive Summary</h2>
+<table>
+    <tr>
+        <td>Org. name:</td>
+        <td>{{ org_name }}</td>
+    </tr>
+    <tr>
+        <td>Contact:</td>
+        <td>{{ contact }}</td>
+    </tr>
+    <tr>
+        <td>Testing date:</td>
+        <td>{{ testing_date }}</td>
+    </tr>
+    <tr>
+        <td>Start of scan:</td>
+        <td>{{ start_time }} UTC</td>
+    </tr>
+    <tr>
+        <td>End of scan:</td>
+        <td>{{ end_time }} UTC</td>
+    </tr>
+    <tr>
+        <td>Testing tool:</td>
+        <td>{{ testing_tool }}</td>
+    </tr>
+    <tr>
+        <td>Critical vulnerabilities:</td>
+        <td>{{ vuln_counts.Critical }}</td>
+    </tr>
+    <tr>
+        <td>Total vulnerabilities:</td>
+        <td>{{ vuln_counts.total }}</td>
+    </tr>
+</table>
+
+<div class="stats-container">
+    <div class="hexagon critical">
+        <div>{{ vuln_counts.Critical }}</div>
+        <div>Critical</div>
+    </div>
+    <div class="hexagon high">
+        <div>{{ vuln_counts.High }}</div>
+        <div>High</div>
+    </div>
+    <div class="hexagon medium">
+        <div>{{ vuln_counts.Medium }}</div>
+        <div>Medium</div>
+    </div>
+    <div class="hexagon low">
+        <div>{{ vuln_counts.Low }}</div>
+        <div>Low</div>
+    </div>
+</div>
+
+<table class="ports-table">
+    <tr>
+        <th>Host</th>
+        <th># of Vulns</th>
+        <th>Open Ports</th>
+    </tr>
+    {% for host in hosts %}
+    <tr>
+        <td>{{ host.ip }}</td>
+        <td>{{ host.vuln_count }}</td>
+        <td>{{ host.open_ports|join(', ') }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% for host in hosts %}
+<h2>Host {{ host.ip }}</h2>
+{% for vuln in host.vulnerabilities %}
+<div class="vuln-card">
+    <table>
+        <tr>
+            <td>Vulnerability:</td>
+            <td>{{ vuln.name }}</td>
+        </tr>
+        <tr>
+            <td>Asset:</td>
+            <td>{{ vuln.asset }}</td>
+        </tr>
+        <tr>
+            <td>Port:</td>
+            <td>{{ vuln.port }}</td>
+        </tr>
+        <tr>
+            <td>Description:</td>
+            <td>{{ vuln.description }}</td>
+        </tr>
+        <tr>
+            <td>Solution:</td>
+            <td>{{ vuln.solution }}</td>
+        </tr>
+        <tr>
+            <td>Reference:</td>
+            <td>{{ vuln.cve }}</td>
+        </tr>
+        <tr>
+            <td>CVSS v3.0:</td>
+            <td>{{ vuln.cvss_score }}</td>
+        </tr>
+    </table>
+</div>
+{% endfor %}
+{% endfor %}
+{% endblock %}

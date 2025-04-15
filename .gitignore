@@ -2,3 +2,6 @@
 venv
 __pycache__
 _old
+.vscode
+media
+reports
