@@ -17,8 +17,8 @@ ELASTIC_APIKEY = os.getenv("ELASTIC_APIKEY")
 
 # File storage
 MEDIA_ROOT = "media"
-SCAN_REPORTS_DIR = os.path.join(MEDIA_ROOT, "scan_reports")
-MARKDOWN_REPORTS_DIR = os.path.join(MEDIA_ROOT, "markdown_reports")
+RAW_DATA_DIR = os.path.join(MEDIA_ROOT, "raw_data")
+REPORTS_DIR = os.path.join(MEDIA_ROOT, "reports")
 
-os.makedirs(SCAN_REPORTS_DIR, exist_ok=True)
-os.makedirs(MARKDOWN_REPORTS_DIR, exist_ok=True) 
+os.makedirs(RAW_DATA_DIR, exist_ok=True)
+os.makedirs(REPORTS_DIR, exist_ok=True)

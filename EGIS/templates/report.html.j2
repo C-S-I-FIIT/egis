@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EGIS - Vulnerability Report</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Title Page -->
+    <div class="title-page">
+        <div class="title-content">
+            <h1>Vulnerability Report</h1>
+            <div class="org-name">{{ organization.name }}</div>
+        </div>
+        <div class="tlp-marking">TLP:RED</div>
+    </div>
+    
+    <!-- Executive Summary Section -->
+    <div class="section">
+        <h2 class="section-title">Executive Summary</h2>
+        <table class="table">
+            <tr>
+                <th>Organization Name:</th>
+                <td>{{ organization.name }}</td>
+            </tr>
+            <tr>
+                <th>Contact:</th>
+                <td>{{ organization.contact }}</td>
+            </tr>
+            <tr>
+                <th>Scan Started:</th>
+                <td>{{ scan_start_date }} {{ scan_start_time }} ({{ timezone|default('UTC') }})</td>
+            </tr>
+            <tr>
+                <th>Scan Completed:</th>
+                <td>{{ scan_end_date|default(scan_start_date) }} {{ scan_end_time }} ({{ timezone|default('UTC') }})</td>
+            </tr>
+            <tr>
+                <th>Scanner:</th>
+                <td>{{ scanner_name }}</td>
+            </tr>
+            <tr>
+                <th>Scan Policy:</th>
+                <td>{{ policy|default('Standard Policy') }}</td>
+            </tr>
+            <tr>
+                <th>Vulnerability Summary:</th>
+                <td>
+                    Critical: {{ vuln_counts.Critical }} | 
+                    High: {{ vuln_counts.High }} | 
+                    Medium: {{ vuln_counts.Medium }} | 
+                    Low: {{ vuln_counts.Low }} | 
+                    Total: {{ executive_summary.total_vulnerabilities }}
+                </td>
+            </tr>
+            <tr>
+                <th>Scan ID:</th>
+                <td>{{ scan_name }}</td>
+            </tr>
+        </table>
+        
+        <!-- Bar chart for vulnerability overview -->
+        <div class="chart-container">
+            {%- set max_count = [vuln_counts.Critical, vuln_counts.High, vuln_counts.Medium, vuln_counts.Low]|max -%}
+            {%- if max_count > 0 %}
+            <div class="bar-row">
+                <div class="bar-label">Critical</div>
+                <div class="bar-container">
+                    <div class="bar critical" style="width: {{ (vuln_counts.Critical / max_count * 100)|round }}%">
+                        {{ vuln_counts.Critical }}
+                    </div>
+                    <div class="bar-value">{{ vuln_counts.Critical }}</div>
+                </div>
+            </div>
+            <div class="bar-row">
+                <div class="bar-label">High</div>
+                <div class="bar-container">
+                    <div class="bar high" style="width: {{ (vuln_counts.High / max_count * 100)|round }}%">
+                        {{ vuln_counts.High }}
+                    </div>
+                    <div class="bar-value">{{ vuln_counts.High }}</div>
+                </div>
+            </div>
+            <div class="bar-row">
+                <div class="bar-label">Medium</div>
+                <div class="bar-container">
+                    <div class="bar medium" style="width: {{ (vuln_counts.Medium / max_count * 100)|round }}%">
+                        {{ vuln_counts.Medium }}
+                    </div>
+                    <div class="bar-value">{{ vuln_counts.Medium }}</div>
+                </div>
+            </div>
+            <div class="bar-row">
+                <div class="bar-label">Low</div>
+                <div class="bar-container">
+                    <div class="bar low" style="width: {{ (vuln_counts.Low / max_count * 100)|round }}%">
+                        {{ vuln_counts.Low }}
+                    </div>
+                    <div class="bar-value">{{ vuln_counts.Low }}</div>
+                </div>
+            </div>
+            {%- else -%}
+            <p>No vulnerabilities found.</p>
+            {%- endif %}
+        </div>
+        
+        <p style="font-size: 14px; margin-top: 15px;"><strong>Disclaimer:</strong> This report contains confidential information regarding the security posture of the tested systems. The findings in this report should be addressed promptly to mitigate potential security risks.</p>
+        
+        <!-- Host Overview Table -->
+        <table class="table">
+            <tr>
+                <th>Host</th>
+                <th># of Vulns</th>
+                <th>Open Ports</th>
+            </tr>
+            {%- for host in hosts %}
+            <tr>
+                <td>
+                    <a href="#host-{{ host.ip | replace('.', '-') }}">{{ host.hostname or host.ip }}</a>
+                </td>
+                <td>{{ host.vuln_count }}</td>
+                <td>
+                    <div class="port-container">
+                        {%- for port in host.open_ports -%}
+                            {%- set port_severity = host.port_severities[port] -%}
+                            {%- if port in host.ports_with_vulns -%}
+                                <a href="#host-{{ host.ip|replace('.', '-') }}-port-{{ port }}" class="port-badge {{ port_severity|lower if port_severity else '' }}">{{ port }}</a>
+                            {%- else -%}
+                                <span class="port-badge">{{ port }}</span>
+                            {%- endif %}
+                        {% endfor %}
+                    </div>
+                </td>
+            </tr>
+            {%- endfor %}
+        </table>
+    </div>
+
+    <!-- Individual Host Sections -->
+    {%- for host in hosts %}
+    <div class="section" id="host-{{ host.ip|replace('.', '-') }}">
+        <h2 class="section-title">Host {{ host.ip }}</h2>
+        <!-- Bar chart for host vulnerabilities -->
+        <div class="chart-container">
+            {%- set host_max_count = [host.critical_count, host.high_count, host.medium_count, host.low_count]|max -%}
+            {%- if host_max_count > 0 %}
+            <div class="bar-row">
+                <div class="bar-label">Critical</div>
+                <div class="bar-container">
+                    <div class="bar critical" style="width: {{ (host.critical_count / host_max_count * 100)|round if host_max_count > 0 else 0 }}%">
+                        {{ host.critical_count }}
+                    </div>
+                    <div class="bar-value">{{ host.critical_count }}</div>
+                </div>
+            </div>
+            <div class="bar-row">
+                <div class="bar-label">High</div>
+                <div class="bar-container">
+                    <div class="bar high" style="width: {{ (host.high_count / host_max_count * 100)|round if host_max_count > 0 else 0 }}%">
+                        {{ host.high_count }}
+                    </div>
+                    <div class="bar-value">{{ host.high_count }}</div>
+                </div>
+            </div>
+            <div class="bar-row">
+                <div class="bar-label">Medium</div>
+                <div class="bar-container">
+                    <div class="bar medium" style="width: {{ (host.medium_count / host_max_count * 100)|round if host_max_count > 0 else 0 }}%">
+                        {{ host.medium_count }}
+                    </div>
+                    <div class="bar-value">{{ host.medium_count }}</div>
+                </div>
+            </div>
+            <div class="bar-row">
+                <div class="bar-label">Low</div>
+                <div class="bar-container">
+                    <div class="bar low" style="width: {{ (host.low_count / host_max_count * 100)|round if host_max_count > 0 else 0 }}%">
+                        {{ host.low_count }}
+                    </div>
+                    <div class="bar-value">{{ host.low_count }}</div>
+                </div>
+            </div>
+            {%- else -%}
+            <p>No vulnerabilities found for this host.</p>
+            {%- endif %}
+        </div>
+
+        <!-- Vulnerability Cards Section -->
+        {%- if host.vulnerabilities %}
+        {%- for vuln in host.vulnerabilities -%}
+        <div id="host-{{ host.ip|replace('.', '-') }}-port-{{ vuln.port }}"></div>
+        <div class="vuln-card vuln-{{ vuln.severity|lower }}" id="vuln-{{ host.ip|replace('.', '-') }}-{{ vuln.port }}">
+            <div class="vuln-card-header {{ vuln.severity|lower }}">
+                <h3 style="margin: 0; font-size: 16px;">{{ vuln.name }}</h3>
+                <span class="severity-label {{ vuln.severity|lower }}">{{ vuln.severity }}</span>
+            </div>
+            <div class="vuln-card-body">
+                <table class="vuln-table">
+                    <tr>
+                        <th>Asset:</th>
+                        <td>{{ host.ip }}{% if host.hostname and host.hostname != host.ip %} ({{ host.hostname }}){% endif %}</td>
+                        <th>Port:</th>
+                        <td>{{ vuln.port }}</td>
+                    </tr>
+                    <tr>
+                        <th>CVE:</th>
+                        <td>{% if vuln.cve and vuln.cve|length > 0 %}{{ vuln.cve|join(', ') }}{% else %}No CVE information available{% endif %}</td>
+                        <th>CVSS Score:</th>
+                        <td>{{ vuln.cvss_score }}</td>
+                    </tr>
+                    
+                    {%- if vuln.synopsis -%}
+                    <tr>
+                        <th>Synopsis:</th>
+                        <td colspan="3">{{ vuln.synopsis }}</td>
+                    </tr>
+                    {%- endif -%}
+                    
+                    {%- if vuln.description -%}
+                    <tr>
+                        <th>Description:</th>
+                        <td colspan="3">{{ vuln.description }}</td>
+                    </tr>
+                    {%- endif -%}
+                    
+                    {%- if vuln.solution -%}
+                    <tr>
+                        <th>Solution:</th>
+                        <td colspan="3">{{ vuln.solution }}</td>
+                    </tr>
+                    {%- endif -%}
+                    
+                    {%- if vuln.see_also -%}
+                    <tr>
+                        <th>See Also:</th>
+                        <td colspan="3" class="see-also-links">
+                            {%- for link in vuln.see_also.split('\n') -%}
+                                {%- set trimmed_link = link.strip() -%}
+                                {%- if trimmed_link -%}
+                                    {%- if trimmed_link.startswith('http://') or trimmed_link.startswith('https://') -%}
+                                        <a href="{{ trimmed_link }}" class="see-also-link">{{ trimmed_link }}</a>
+                                    {%- else -%}
+                                        <span class="see-also-link">{{ trimmed_link }}</span>
+                                    {%- endif -%}
+                                {%- endif -%}
+                            {%- endfor -%}
+                        </td>
+                    </tr>
+                    {%- endif -%}
+                    
+                    {%- if vuln.plugin_output -%}
+                    <tr>
+                        <th>Plugin Output:</th>
+                        <td colspan="3" class="plugin-output">{{ vuln.plugin_output }}</td>
+                    </tr>
+                    {%- endif -%}
+                </table>
+            </div>
+        </div>
+        {%- endfor -%}
+        {%- else -%}
+        <p>No vulnerabilities found for this host.</p>
+        {%- endif -%}
+    </div>
+    {%- endfor -%}
+</body>
+</html> 

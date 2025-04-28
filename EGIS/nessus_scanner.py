@@ -64,10 +64,10 @@ class NessusScanner:
         return response.status_code == 200
 
     def get_scan_status(self, scan_id):
-        response = self._request('GET', f'scans/{scan_id}/latest-status')
+        response = self._request('GET', f'scans/{scan_id}')
         logger.debug(f"Checking status of scan {scan_id}")
         if response.status_code == 200:
-            return response.json()['status']
+            return response.json()['info']['status']
         else:
             logger.error(f"Error retrieving scan status: {response.status_code}")
             return None
@@ -76,9 +76,45 @@ class NessusScanner:
         response = self._request('GET', f'scans/{scan_id}')
         return response.json()
 
-    def export_scan_results(self, scan_id, format='csv'):
+    def export_scan_results(self, scan_id):
         # Request export
-        response = self._request('POST', f'scans/{scan_id}/export', json={'format': format})
+        
+        body = {
+            'format': 'csv',
+            'template_id': '',
+            'reportContents': {
+                'csvColumns': {
+                    'id': True,
+                    'cve': True,
+                    'cvss': True,
+                    'risk': True,
+                    'hostname': True,
+                    'protocol': True,
+                    'port': True,
+                    'plugin_name': True,
+                    'synopsis': True,
+                    'description': True,
+                    'solution': True,
+                    'see_also': True,
+                    'plugin_output': True,
+                    'stig_severity': True,
+                    'cvss3_base_score': True,
+                    'cvss_temporal_score': True,
+                    'cvss3_temporal_score': True,
+                    'vpr_score': True,
+                    'risk_factor': True,
+                    'references': True,
+                    'plugin_information': True,
+                    'exploitable_with': True
+                }
+            },
+            'extraFilters': {
+                'host_ids': [],
+                'plugin_ids': []
+            }
+        }
+
+        response = self._request('POST', f'scans/{scan_id}/export', json=body)
         file_id = response.json()['file']
         logger.info(f"Exporting scan {scan_id} results as {format}")
         logger.debug(f"Export file ID: {file_id}")

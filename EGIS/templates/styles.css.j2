@@ -1,0 +1,473 @@
+/* ===== Page Setup & Defaults ===== */
+@page {
+    margin: 1cm;
+    @top-left {
+        content: "EGIS Vulnerability Report";
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        font-weight: bold;
+    }
+    @top-right {
+        content: "{{ organization.name }}";
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+    }
+    @bottom-right {
+        content: "TLP:RED";
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        color: #e53935;
+        font-weight: bold;
+    }
+    @bottom-left {
+        content: string(section-title);
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+    }
+}
+
+@page :first {
+    @top-left { content: normal; }
+    @top-right { content: normal; }
+    @bottom-left { content: normal; }
+    @bottom-right { content: normal; }
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.5;
+    margin: 0;
+    padding: 10px;
+    color: #333;
+}
+
+/* ===== Link Styles ===== */
+/* External links (standard styling) */
+a:not([href^="#"]) {
+    color: #0066cc;
+    text-decoration: underline;
+}
+
+a:not([href^="#"]):hover {
+    color: #004499;
+}
+
+/* Internal links (maintain original text styling) */
+a[href^="#"] {
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+a[href^="#"]:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* ===== Title Page ===== */
+.title-page {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    page-break-after: always;
+    padding: 80px 0;
+    box-sizing: border-box;
+}
+
+.title-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.title-page h1 {
+    font-size: 54px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.title-page .org-name {
+    font-size: 32px;
+    font-weight: normal;
+}
+
+.title-page .tlp-marking {
+    font-size: 24px;
+    font-weight: bold;
+    color: #e53935;
+    margin-top: 40px;
+}
+
+/* ===== Section Styles ===== */
+.section {
+    margin-bottom: 40px;
+    page-break-before: always;
+}
+
+.section-title {
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    margin: 20px 0;
+    string-set: section-title content();
+}
+
+/* ===== Tables ===== */
+/* General Tables */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+.table th, .table td {
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 14px;
+}
+
+.table th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+    width: fit-content;
+    white-space: nowrap;
+}
+
+.table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Host overview table column widths */
+.table td:first-child {
+    width: 25%;
+}
+
+.table td:nth-child(2) {
+    width: 10%;
+}
+
+.table td:nth-child(3) {
+    width: 65%;
+}
+
+/* Vulnerability Tables */
+.vuln-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #ddd;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.vuln-table th, .vuln-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    font-size: 14px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
+
+.vuln-table th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+    width: fit-content;
+    white-space: nowrap;
+}
+
+.vuln-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Vulnerability table column widths */
+.vuln-table td:nth-child(2) {
+    width: 45%;
+}
+
+.vuln-table td:nth-child(4) {
+    width: 25%;
+}
+
+/* ===== Vulnerability Cards ===== */
+.vuln-card {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.vuln-card-header {
+    padding: 10px 15px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.vuln-card-body {
+    padding: 15px;
+}
+
+/* ===== Port Badges ===== */
+.port-container {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    padding: 5px 0;
+}
+
+.port-badge {
+    display: inline-block;
+    width: 60px;
+    height: 26px;
+    line-height: 26px;
+    margin: 3px;
+    text-align: center;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: normal;
+    border: 1px solid #ddd;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+/* Link styles for port badges */
+a.port-badge {
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+}
+
+a.port-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* ===== Charts ===== */
+.chart-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.bar-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.bar-label {
+    width: 80px;
+    text-align: right;
+    padding-right: 10px;
+    font-weight: bold;
+}
+
+.bar-container {
+    flex-grow: 1;
+    background-color: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+    height: 24px;
+    position: relative;
+}
+
+.bar {
+    height: 100%;
+    color: white;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    font-weight: bold;
+    min-width: 40px;
+    transition: width 0.5s ease;
+}
+
+.bar-value {
+    position: absolute;
+    right: 10px;
+    color: #333;
+    font-weight: bold;
+}
+
+/* ===== Special Content Styling ===== */
+/* Plugin Output */
+.plugin-output {
+    font-size: 10px !important;
+    font-family: monospace;
+    white-space: pre-wrap;
+    line-height: 1.3;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 5px;
+    background-color: #f5f5f5;
+    border-radius: 3px;
+    overflow-x: auto; /* Add horizontal scrolling for long lines */
+    word-break: break-all; /* Break long words to prevent overflow */
+}
+
+/* See Also Links */
+.see-also-links {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.see-also-link {
+    display: block;
+    margin-bottom: 6px;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    line-height: 1.3;
+    max-width: 100%;
+}
+
+.severity-label {
+    background-color: #333;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 14px;
+    box-shadow: 0 0 4px rgba(0,0,0,0.5);
+    letter-spacing: 0.5px;
+}
+
+/* ===== Severity Colors ===== */
+/* Severity for bars */
+.critical {
+    background-color: #9c27b0;
+}
+.high {
+    background-color: #e53935;
+}
+.medium {
+    background-color: #fb8c00;
+}
+.low {
+    background-color: #2196f3;
+}
+
+/* Port badge colors */
+.port-badge.critical {
+    background-color: #9c27b0;
+    color: white;
+    border-color: #6a1b9a;
+}
+
+.port-badge.high {
+    background-color: #e53935;
+    color: white;
+    border-color: #b71c1c;
+}
+
+.port-badge.medium {
+    background-color: #fb8c00;
+    color: white;
+    border-color: #e65100;
+}
+
+.port-badge.low {
+    background-color: #2196f3;
+    color: white;
+    border-color: #0d47a1;
+}
+
+/* Severity label colors */
+.severity-label.critical { background-color: #9c27b0; }
+.severity-label.high { background-color: #e53935; }
+.severity-label.medium { background-color: #fb8c00; }
+.severity-label.low { background-color: #2196f3; }
+
+/* Vulnerability card styling by severity */
+.vuln-critical {
+    border-color: rgba(156, 39, 176, 0.4);
+}
+.vuln-high {
+    border-color: rgba(229, 57, 53, 0.4);
+}
+.vuln-medium {
+    border-color: rgba(251, 140, 0, 0.4);
+}
+.vuln-low {
+    border-color: rgba(33, 150, 243, 0.4);
+}
+
+/* Vulnerability card header colors */
+.vuln-card-header.critical { 
+    background-color: rgba(156, 39, 176, 0.1);
+    border-bottom-color: rgba(156, 39, 176, 0.4);
+}
+.vuln-card-header.high { 
+    background-color: rgba(229, 57, 53, 0.1);
+    border-bottom-color: rgba(229, 57, 53, 0.4);
+}
+.vuln-card-header.medium { 
+    background-color: rgba(251, 140, 0, 0.1);
+    border-bottom-color: rgba(251, 140, 0, 0.4);
+}
+.vuln-card-header.low { 
+    background-color: rgba(33, 150, 243, 0.1);
+    border-bottom-color: rgba(33, 150, 243, 0.4);
+}
+
+/* Vulnerability table styling by severity */
+.critical-table th {
+    background-color: rgba(156, 39, 176, 0.2);
+    border-color: rgba(156, 39, 176, 0.4);
+}
+.critical-table td {
+    border-color: rgba(156, 39, 176, 0.2);
+}
+
+.high-table th {
+    background-color: rgba(229, 57, 53, 0.2);
+    border-color: rgba(229, 57, 53, 0.4);
+}
+.high-table td {
+    border-color: rgba(229, 57, 53, 0.2);
+}
+
+.medium-table th {
+    background-color: rgba(251, 140, 0, 0.2);
+    border-color: rgba(251, 140, 0, 0.4);
+}
+.medium-table td {
+    border-color: rgba(251, 140, 0, 0.2);
+}
+
+.low-table th {
+    background-color: rgba(33, 150, 243, 0.2);
+    border-color: rgba(33, 150, 243, 0.4);
+}
+.low-table td {
+    border-color: rgba(33, 150, 243, 0.2);
+}
+
+/* ===== PDF/Print Optimization ===== */
+/* Ensure port badges are visible */
+{# .port-badge {
+    border: 1px solid #000;
+    display: inline-block !important;
+}
+
+/* Force visibility of link destinations */
+[id] {
+    scroll-margin-top: 2em;
+    position: relative;
+} #}
