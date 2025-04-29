@@ -1,0 +1,29 @@
+# Version control
+.git
+.gitignore
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.env
+venv/
+ENV/
+
+# Old code and tests
+_old/
+
+# Data files (will be mounted as volume)
+egis-app/data/
+
+# IDE files
+.vscode/
+.idea/
+
+# Docker files
+.dockerignore
+
+# Logs
+*.log 

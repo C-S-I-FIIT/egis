@@ -1,0 +1,39 @@
+services:
+  # EGIS Vulnerability Assessment Application
+  egis-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: egis-app
+    ports:
+      - "80:80"
+    volumes:
+      - ./egis-app:/app
+      - ./data:/data
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    command: ["streamlit", "run", "streamlit_gui.py", "--server.port", "80"]
+    env_file:
+      - ./.env
+
+  # Demo vulnerable system for testing
+  metasploitable2:
+    image: tleemcjr/metasploitable2
+    container_name: metasploitable2
+    command: sh -c "/bin/services.sh && tail -f /dev/null"
+    networks:
+      lan:
+        ipv4_address: 10.0.220.12
+
+networks:
+  egis-network:
+    driver: bridge
+  lan:
+    driver: macvlan
+    driver_opts:
+      parent: eth0 # VM's access port
+    ipam:
+      config:
+        - subnet: 10.0.220.0/24
+          gateway: 10.0.220.1

@@ -9,12 +9,12 @@ from report_generator import ReportGenerator
 import os
 from loguru import logger
 
-class ScanManager:
+class AppController:
     def __init__(self):
         self.netbox = NetboxClient(NETBOX_URL, NETBOX_TOKEN)
         self.scanner = NessusScanner(NESSUS_URL, NESSUS_ACCESSKEY, NESSUS_SECRETKEY)
         self.elastic = ElasticClient(ELASTIC_URL, ELASTIC_INDEX, ELASTIC_APIKEY)
-        logger.info("Initializing ScanManager")
+        logger.info("Initializing AppController")
 
     def _get_scan_targets(self):
         # Get targets from Netbox and return their IPs

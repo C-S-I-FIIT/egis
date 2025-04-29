@@ -17,6 +17,17 @@ class ElasticClient:
         self.index_prefix = index_prefix
         logger.info(f"Initializing Elasticsearch client with URL: {url}")
 
+    def test_connection(self):
+        try:
+            # Test connection by checking cluster health
+            health = self.es.cluster.health()
+            logger.info(f"Elasticsearch cluster health: {health}")
+            return True
+        except Exception as e:
+            logger.error(f"Elasticsearch connection failed: {e}")
+            return False
+
+
     def store_vulnerability(self, vuln_data):
         # Store vulnerability data in Elasticsearch
         doc_id = self._generate_doc_id(vuln_data)
