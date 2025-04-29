@@ -108,7 +108,7 @@
         <p style="font-size: 14px; margin-top: 15px;"><strong>Disclaimer:</strong> This report contains confidential information regarding the security posture of the tested systems. The findings in this report should be addressed promptly to mitigate potential security risks.</p>
         
         <!-- Host Overview Table -->
-        <table class="table">
+        <table class="table host-overview">
             <tr>
                 <th>Host</th>
                 <th># of Vulns</th>
@@ -186,78 +186,80 @@
             {%- endif %}
         </div>
 
-        <!-- Vulnerability Cards Section -->
+        <!-- Vulnerability Tables -->
         {%- if host.vulnerabilities %}
         {%- for vuln in host.vulnerabilities -%}
         <div id="host-{{ host.ip|replace('.', '-') }}-port-{{ vuln.port }}"></div>
-        <div class="vuln-card vuln-{{ vuln.severity|lower }}" id="vuln-{{ host.ip|replace('.', '-') }}-{{ vuln.port }}">
-            <div class="vuln-card-header {{ vuln.severity|lower }}">
-                <h3 style="margin: 0; font-size: 16px;">{{ vuln.name }}</h3>
-                <span class="severity-label {{ vuln.severity|lower }}">{{ vuln.severity }}</span>
-            </div>
-            <div class="vuln-card-body">
-                <table class="vuln-table">
-                    <tr>
-                        <th>Asset:</th>
-                        <td>{{ host.ip }}{% if host.hostname and host.hostname != host.ip %} ({{ host.hostname }}){% endif %}</td>
-                        <th>Port:</th>
-                        <td>{{ vuln.port }}</td>
-                    </tr>
-                    <tr>
-                        <th>CVE:</th>
-                        <td>{% if vuln.cve and vuln.cve|length > 0 %}{{ vuln.cve|join(', ') }}{% else %}No CVE information available{% endif %}</td>
-                        <th>CVSS Score:</th>
-                        <td>{{ vuln.cvss_score }}</td>
-                    </tr>
-                    
-                    {%- if vuln.synopsis -%}
-                    <tr>
-                        <th>Synopsis:</th>
-                        <td colspan="3">{{ vuln.synopsis }}</td>
-                    </tr>
-                    {%- endif -%}
-                    
-                    {%- if vuln.description -%}
-                    <tr>
-                        <th>Description:</th>
-                        <td colspan="3">{{ vuln.description }}</td>
-                    </tr>
-                    {%- endif -%}
-                    
-                    {%- if vuln.solution -%}
-                    <tr>
-                        <th>Solution:</th>
-                        <td colspan="3">{{ vuln.solution }}</td>
-                    </tr>
-                    {%- endif -%}
-                    
-                    {%- if vuln.see_also -%}
-                    <tr>
-                        <th>See Also:</th>
-                        <td colspan="3" class="see-also-links">
-                            {%- for link in vuln.see_also.split('\n') -%}
-                                {%- set trimmed_link = link.strip() -%}
-                                {%- if trimmed_link -%}
-                                    {%- if trimmed_link.startswith('http://') or trimmed_link.startswith('https://') -%}
-                                        <a href="{{ trimmed_link }}" class="see-also-link">{{ trimmed_link }}</a>
-                                    {%- else -%}
-                                        <span class="see-also-link">{{ trimmed_link }}</span>
-                                    {%- endif -%}
+        <table class="vuln-table {{ vuln.severity|lower }}-table" id="vuln-{{ host.ip|replace('.', '-') }}-{{ vuln.port }}">
+            <thead>
+                <tr class="vuln-header {{ vuln.severity|lower }}">
+                    <th colspan="4" class="vuln-title">
+                        <span class="vuln-name">{{ vuln.name }}</span>
+                        <span class="severity-label {{ vuln.severity|lower }}">{{ vuln.severity }}</span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th>Asset:</th>
+                    <td>{{ host.ip }}{% if host.hostname and host.hostname != host.ip %} ({{ host.hostname }}){% endif %}</td>
+                    <th>Port:</th>
+                    <td>{{ vuln.port }}</td>
+                </tr>
+                <tr>
+                    <th>CVE:</th>
+                    <td>{% if vuln.cve and vuln.cve|length > 0 %}{{ vuln.cve|join(', ') }}{% else %}No CVE information available{% endif %}</td>
+                    <th>CVSS Score:</th>
+                    <td>{{ vuln.cvss_score }}</td>
+                </tr>
+                
+                {%- if vuln.synopsis -%}
+                <tr>
+                    <th>Synopsis:</th>
+                    <td colspan="3">{{ vuln.synopsis }}</td>
+                </tr>
+                {%- endif -%}
+                
+                {%- if vuln.solution -%}
+                <tr>
+                    <th>Solution:</th>
+                    <td colspan="3">{{ vuln.solution }}</td>
+                </tr>
+                {%- endif -%}
+                
+                {%- if vuln.see_also -%}
+                <tr>
+                    <th>See Also:</th>
+                    <td colspan="3" class="see-also-links">
+                        {%- for link in vuln.see_also.split('\n') -%}
+                            {%- set trimmed_link = link.strip() -%}
+                            {%- if trimmed_link -%}
+                                {%- if trimmed_link.startswith('http://') or trimmed_link.startswith('https://') -%}
+                                    <a href="{{ trimmed_link }}" class="see-also-link">{{ trimmed_link }}</a>
+                                {%- else -%}
+                                    <span class="see-also-link">{{ trimmed_link }}</span>
                                 {%- endif -%}
-                            {%- endfor -%}
-                        </td>
-                    </tr>
-                    {%- endif -%}
-                    
-                    {%- if vuln.plugin_output -%}
-                    <tr>
-                        <th>Plugin Output:</th>
-                        <td colspan="3" class="plugin-output">{{ vuln.plugin_output }}</td>
-                    </tr>
-                    {%- endif -%}
-                </table>
-            </div>
-        </div>
+                            {%- endif -%}
+                        {%- endfor -%}
+                    </td>
+                </tr>
+                {%- endif -%}
+
+                {%- if vuln.description -%}
+                <tr>
+                    <th>Description:</th>
+                    <td colspan="3" class="vuln-description">{{ vuln.description }}</td>
+                </tr>
+                {%- endif -%}
+                
+                {%- if vuln.plugin_output -%}
+                <tr>
+                    <th>Plugin Output:</th>
+                    <td colspan="3" class="plugin-output">{{ vuln.plugin_output }}</td>
+                </tr>
+                {%- endif -%}
+            </tbody>
+        </table>
         {%- endfor -%}
         {%- else -%}
         <p>No vulnerabilities found for this host.</p>
