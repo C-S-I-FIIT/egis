@@ -1,0 +1,230 @@
+[
+  {
+    "type": "lens",
+    "attributes": {
+      "title": "Number of Critical Vulnerabilities",
+      "visualizationType": "lnsDatatable",
+      "state": {
+        "datasourceStates": {
+          "formBased": {
+            "layers": {
+              "layer1": {
+                "columns": {
+                  "count_critical": {
+                    "label": "Critical Vulnerabilities",
+                    "dataType": "number",
+                    "operationType": "count",
+                    "isBucketed": false,
+                    "filter": {
+                      "query": "vuln.severity: \"Critical\"",
+                      "language": "kuery"
+                    }
+                  }
+                },
+                "columnOrder": ["count_critical"]
+              }
+            }
+          }
+        },
+        "visualization": {
+          "layerId": "layer1",
+          "columns": ["count_critical"]
+        }
+      }
+    },
+    "references": [
+      {
+        "id": "db5efde9-4fa3-469a-a93d-b3ac918076fc",
+        "name": "indexpattern-datasource-layer-layer1",
+        "type": "index-pattern"
+      }
+    ]
+  },
+  {
+    "type": "lens",
+    "attributes": {
+      "title": "Critical Vulnerabilities per Host",
+      "visualizationType": "lnsDatatable",
+      "state": {
+        "datasourceStates": {
+          "formBased": {
+            "layers": {
+              "layer1": {
+                "columns": {
+                  "host": {
+                    "label": "Host",
+                    "dataType": "string",
+                    "operationType": "terms",
+                    "sourceField": "host.ip",
+                    "isBucketed": true,
+                    "params": { "size": 10 }
+                  },
+                  "count_critical": {
+                    "label": "Critical Vulnerabilities",
+                    "dataType": "number",
+                    "operationType": "count",
+                    "isBucketed": false,
+                    "filter": {
+                      "query": "vuln.severity: \"Critical\"",
+                      "language": "kuery"
+                    }
+                  }
+                },
+                "columnOrder": ["host", "count_critical"]
+              }
+            }
+          }
+        },
+        "visualization": {
+          "layerId": "layer1",
+          "columns": ["host", "count_critical"]
+        }
+      }
+    },
+    "references": [
+      {
+        "id": "db5efde9-4fa3-469a-a93d-b3ac918076fc",
+        "name": "indexpattern-datasource-layer-layer1",
+        "type": "index-pattern"
+      }
+    ]
+  },
+  {
+    "type": "lens",
+    "attributes": {
+      "title": "CVE Density per Host",
+      "visualizationType": "lnsDatatable",
+      "state": {
+        "datasourceStates": {
+          "formBased": {
+            "layers": {
+              "layer1": {
+                "columns": {
+                  "host": {
+                    "label": "Host",
+                    "dataType": "string",
+                    "operationType": "terms",
+                    "sourceField": "host.ip",
+                    "isBucketed": true,
+                    "params": { "size": 10 }
+                  },
+                  "unique_cves": {
+                    "label": "Unique CVEs",
+                    "dataType": "number",
+                    "operationType": "unique_count",
+                    "sourceField": "vuln.cve",
+                    "isBucketed": false
+                  }
+                },
+                "columnOrder": ["host", "unique_cves"]
+              }
+            }
+          }
+        },
+        "visualization": {
+          "layerId": "layer1",
+          "columns": ["host", "unique_cves"]
+        }
+      }
+    },
+    "references": [
+      {
+        "id": "db5efde9-4fa3-469a-a93d-b3ac918076fc",
+        "name": "indexpattern-datasource-layer-layer1",
+        "type": "index-pattern"
+      }
+    ]
+  },
+  {
+    "type": "lens",
+    "attributes": {
+      "title": "Vulnerabilities Over Time",
+      "visualizationType": "lnsXY",
+      "state": {
+        "datasourceStates": {
+          "formBased": {
+            "layers": {
+              "layer1": {
+                "columns": {
+                  "timestamp": {
+                    "label": "Time",
+                    "dataType": "date",
+                    "operationType": "date_histogram",
+                    "sourceField": "@timestamp",
+                    "isBucketed": true,
+                    "params": { "interval": "auto" }
+                  },
+                  "vuln_count": {
+                    "label": "Vulnerabilities",
+                    "dataType": "number",
+                    "operationType": "count",
+                    "isBucketed": false
+                  }
+                },
+                "columnOrder": ["timestamp", "vuln_count"]
+              }
+            }
+          }
+        },
+        "visualization": {
+          "layerId": "layer1",
+          "xAccessor": "timestamp",
+          "yAccessors": ["vuln_count"],
+          "seriesType": "line"
+        }
+      }
+    },
+    "references": [
+      {
+        "id": "db5efde9-4fa3-469a-a93d-b3ac918076fc",
+        "name": "indexpattern-datasource-layer-layer1",
+        "type": "index-pattern"
+      }
+    ]
+  },
+  {
+    "type": "lens",
+    "attributes": {
+      "title": "Most Common Vulnerability Types",
+      "visualizationType": "lnsDatatable",
+      "state": {
+        "datasourceStates": {
+          "formBased": {
+            "layers": {
+              "layer1": {
+                "columns": {
+                  "vuln_type": {
+                    "label": "Vulnerability Type",
+                    "dataType": "string",
+                    "operationType": "terms",
+                    "sourceField": "vuln.name",
+                    "isBucketed": true,
+                    "params": { "size": 10 }
+                  },
+                  "count": {
+                    "label": "Count",
+                    "dataType": "number",
+                    "operationType": "count",
+                    "isBucketed": false
+                  }
+                },
+                "columnOrder": ["vuln_type", "count"]
+              }
+            }
+          }
+        },
+        "visualization": {
+          "layerId": "layer1",
+          "columns": ["vuln_type", "count"]
+        }
+      }
+    },
+    "references": [
+      {
+        "id": "db5efde9-4fa3-469a-a93d-b3ac918076fc",
+        "name": "indexpattern-datasource-layer-layer1",
+        "type": "index-pattern"
+      }
+    ]
+  }
+] 

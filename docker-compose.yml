@@ -13,7 +13,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
     restart: unless-stopped
-    command: ["streamlit", "run", "streamlit_gui.py", "--server.port", "80"]
+    command: ["streamlit", "run", "homepage.py", "--server.port", "80"]
     env_file:
       - ./.env
 
@@ -27,8 +27,6 @@ services:
         ipv4_address: 10.0.220.12
 
 networks:
-  egis-network:
-    driver: bridge
   lan:
     driver: macvlan
     driver_opts:

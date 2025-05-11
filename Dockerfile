@@ -33,4 +33,4 @@ EXPOSE 80
 ENV PYTHONUNBUFFERED=1
 
 # Run the EGIS web interface via the main.py launcher
-#CMD ["python", "main.py", "--port=80"] 
+#CMD ["streamlit", "run", "homepage.py", "--server.port", "80"]
