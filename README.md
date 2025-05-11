@@ -11,10 +11,8 @@ A web application to semi-automate the Vulnerability Assessment process, powered
 - **Web Interface** - Easy-to-use Streamlit interface for scan management and report generation
 - **Organization-Based Scanning & Reporting** - Run vulnerability scans & generate reports from them, based on selected organizations/tenants
 
-## Architecture
-
+## Architecture Overview
 The application consists of several key components:
-
 - **App Controller** - Orchestrates the vulnerability assessment process
 - **Nessus Integration** - Communicates with Tenable Nessus for vulnerability scanning
 - **Netbox Integration** - Retrieves target information from Netbox CMDB
@@ -22,52 +20,107 @@ The application consists of several key components:
 - **Report Generator** - Creates PDF and HTML reports from scan data
 - **Web Interface** - Streamlit multipage GUI for user interaction
 
-## Setup
+## Setup & Configuration
+### 1. Environment Setup
+- Copy `.env-example` to `.env` and fill in your credentials:
+  ```
+  cp .env-example .env
+  ```
+- Edit the `.env` file with your specific settings:
+  - Nessus scanner credentials
+  - Netbox API token
+  - Elasticsearch configuration
 
-1. Copy `.env-example` to `.env` and fill in your credentials:
-   ```
-   cp .env-example .env
-   ```
+### 2. Netbox Integration Requirements
+To enable asset discovery and organization-based scanning, the following must be present in your Netbox instance:
+- **Tenants (Organizations):**
+  - Each organization must be created as a Netbox Tenant (`/api/tenancy/tenants/`).
+  - Required fields: `name`, `slug`, and optionally `description`.
+  - Example:
+    ```json
+    {
+      "id": 1,
+      "name": "Example Organization",
+      "slug": "example-org",
+      "description": "Example description for organization."
+    }
+    ```
+- **Contacts:**
+  - Each organization should have at least one associated Contact (`/api/tenancy/contacts/`), assigned via a Contact Assignment (`/api/tenancy/contact-assignments/`).
+  - Required contact fields: `name`, `email` (for notifications/reporting), and optionally `phone`, `title`, `role`, `priority`.
+  - The Contact Assignment must link the contact to the tenant, with a `role` (e.g., `Administrator`) and a `priority` (e.g., `primary`).
+  - Example Contact Assignment:
+    ```json
+    {
+      "object_id": 1,  // Tenant ID
+      "contact": { "name": "Example Admin", "email": "admin@example.org" },
+      "role": { "name": "Administrator" },
+      "priority": { "value": "primary" }
+    }
+    ```
+- **Scan Targets (IP Addresses):**
+  - IP addresses to be scanned must be present in Netbox IPAM (`/api/ipam/ip-addresses/`).
+  - Each IP must:
+    - Be assigned to the correct tenant (`tenant` field, matching the organization)
+    - Have the tag with slug `vuln-scan` (required for discovery by the app)
+    - Optionally include `dns_name` and `description` for enrichment
+    - Be assigned to a device or virtual machine for best enrichment (fields: `assigned_object`, `device`, `virtual_machine`, `site`, `rack`)
+  - Example:
+    ```json
+    {
+      "address": "192.0.2.10/24",
+      "tenant": { "id": 1, "name": "Example Organization" },
+      "dns_name": "host1.example.org",
+      "description": "Example VM for vulnerability scanning.",
+      "tags": [ { "slug": "vuln-scan" } ],
+      "assigned_object": { "virtual_machine": { "name": "host1-vm" } }
+    }
+    ```
+- **Tag Requirement:**
+  - The tag with slug `vuln-scan` must exist in Netbox and be assigned to all IP addresses that should be included in vulnerability scans.
 
-2. Edit the `.env` file with your specific settings:
-   - Nessus scanner credentials
-   - Netbox API token
-   - Elasticsearch configuration
+If any of these requirements are not met, the application will not be able to discover or enrich scan targets for the given organization.
 
-## Docker Usage
+### 3. Required CSV Format for Scan Import
+When importing scan results from a CSV file (e.g., Nessus export), the file must have the following columns (header row required):
+```
+Plugin ID,CVE,CVSS v2.0 Base Score,Risk,Host,Protocol,Port,Name,Synopsis,Description,Solution,See Also,Plugin Output,STIG Severity,CVSS v3.0 Base Score,CVSS v2.0 Temporal Score,CVSS v3.0 Temporal Score,VPR Score,Risk Factor,BID,XREF,MSKB,Plugin Publication Date,Plugin Modification Date,Metasploit,Core Impact,CANVAS
+```
+- Each row represents a single vulnerability finding for a host/port.
+- All columns above must be present (even if some values are empty for a given row).
+- The most important columns for correct parsing and reporting are:
+  - `Host` (IP address of the affected host)
+  - `Port`, `Protocol` (service context)
+  - `Name`, `Synopsis`, `Description`, `Solution` (vulnerability details)
+  - `Risk` or `Risk Factor` (severity)
+  - `CVE`, `Plugin ID` (identifiers)
+- The parser is designed for Nessus CSV format, but other scanners work if the columns match exactly.
 
+If the CSV format does not match, the import will fail or produce incorrect results.
+
+## Usage
+### Docker Deployment
 The application is fully containerized for easy deployment:
-
-### Run with Docker Compose
-
 ```bash
 # Start all services
 docker compose up -d
-
 # View logs
 docker compose logs -f egis-app
-
 # Stop all services
 docker compose down
 ```
-
 The EGIS web interface will be available at http://localhost:80
 
-## Running Locally (Without Docker)
-
-To run the application locally:
-
+### Running Locally (Without Docker)
 ```bash
 # Install dependencies
 pip install -r requirements.txt
-
 # Run the application
 cd egis-app
 python -m streamlit run homepage.py --server.port 80
 ```
 
 ## Directory Structure
-
 - **/egis-app/** - Main application code
   - **app_controller.py** - Orchestrates the vulnerability assessment process
   - **config.py** - Configuration and environment variables
@@ -86,16 +139,13 @@ python -m streamlit run homepage.py --server.port 80
     - **5_Raw_Scan_Data.py** - View and process raw scan data
     - **6_Settings.py** - Application settings and service connectivity
   - **/templates/** - Report templates using Jinja2
-
 - **/data/** - Generated reports and scan data
   - **/raw_data/** - Raw CSV exports from scans
   - **/reports/** - Generated PDF and HTML reports
   - **/logs/** - Application logs
 
 ## Application Navigation
-
 The EGIS application uses Streamlit's multipage navigation structure with categorized pages:
-
 - **Home** - Dashboard with quick actions and statistics
 - **Scan Management**
   - Run New Assessment - Execute vulnerability scans for selected organizations
@@ -106,42 +156,19 @@ The EGIS application uses Streamlit's multipage navigation structure with catego
   - Raw Scan Data - View and process raw CSV scan data
 - **Settings** - Configure application settings and check service connectivity
 
-## Getting Started
-
-After launching the application, you can:
-
-1. Navigate to "Run New Assessment" to select organizations and start a scan
-2. Check "Settings" to verify connectivity to required services
-3. View generated reports in the "Reports" section after scans complete
-
-## Troubleshooting
-
-If you encounter issues:
-
-1. Check the logs in the Settings page for error messages
-2. Verify service connectivity in the Settings page
-3. Ensure your environment variables are correctly set in the .env file
-
-## Screenshots
-
-![EGIS Home Dashboard](https://example.com/screenshots/egis-home.png)
-![Organization Selection](https://example.com/screenshots/organization-selection.png)
-![Generated Reports](https://example.com/screenshots/reports-view.png)
-
-## Elasticsearch Document Structure
-
+## Data Formats
+### Elasticsearch Document Structure
 The application stores each vulnerability finding as a separate document in Elasticsearch with the following structure:
-
 ```json
 {
   "organization": {
     "id": "1",
-    "name": "FIIT Academy",
-    "description": "FIIT Academy / Cisco NetAcad labs",
-    "primary_contact_name": "FIIT Academy - Admin",
-    "primary_contact_email": "admin@fiitacademy.fiit.stuba.sk",
+    "name": "Example Organization",
+    "description": "Example description for organization.",
+    "primary_contact_name": "Example Admin",
+    "primary_contact_email": "admin@example.org",
     "primary_contact_phone": "",
-    "slug": "fiit-academy",
+    "slug": "example-org",
     "contacts": [
       {
         "name": "John Doe",
@@ -154,16 +181,16 @@ The application stores each vulnerability finding as a separate document in Elas
     ]
   },
   "scanner": {
-    "id": "10.0.220.11",
-    "ip": "10.0.220.11",
+    "id": "192.0.2.10",
+    "ip": "192.0.2.10",
     "name": "Nessus Professional",
     "version": "10.5.1",
     "os": "Linux",
     "distribution": "Ubuntu 22.04"
   },
   "scan": {
-    "id": "EGIS_Assessment_20250501_141500",
-    "name": "EGIS_Assessment_20250501_141500",
+    "id": "EGIS_Assessment_YYYYMMDD_HHMMSS",
+    "name": "EGIS_Assessment_YYYYMMDD_HHMMSS",
     "type": "authenticated",
     "start_timestamp": "2025-05-01T14:15:00",
     "end_timestamp": "2025-05-01T14:45:30",
@@ -177,14 +204,14 @@ The application stores each vulnerability finding as a separate document in Elas
     "total_hosts": 0
   },
   "host": {
-    "ip": "10.0.220.12",
-    "dns_name": "dp-broman-vulnerable.fiitacademy.fiit.stuba.sk",
+    "ip": "192.0.2.11",
+    "dns_name": "host1.example.org",
     "os_family": "Linux",
     "os_distribution": "Ubuntu",
     "os_version": "20.04.3 LTS",
-    "device_name": "dp-broman-vulnerable",
+    "device_name": "host1-vm",
     "device_role": "Virtual Machine",
-    "site_name": "FIIT Academy Lab",
+    "site_name": "Example Site",
     "rack": "",
     "critical_count": 2,
     "high_count": 5,
@@ -255,8 +282,6 @@ The application stores each vulnerability finding as a separate document in Elas
 }
 ```
 
-This structured format allows for efficient querying and visualization in Elasticsearch and Kibana.
-
 The data is also passed from the `vulnerability_parser.py` to `report_generator.py` in the following format, for easy iteration of the hosts and vulnerabilities:
 ```json
 {
@@ -265,10 +290,10 @@ The data is also passed from the `vulnerability_parser.py` to `report_generator.
   "scan": { ... },          // Scan metadata and statistics
   "hosts": [                // List of hosts in the scan
     {
-      "ip": "10.0.220.12",
-      "dns_name": "example.domain.com",
+      "ip": "192.0.2.11",
+      "dns_name": "host1.example.org",
       "os_family": "Linux",
-      "device_name": "example-server",
+      "device_name": "host1-vm",
       // Other host properties
       "open_ports": [       // List of port dictionaries
         {
@@ -286,7 +311,7 @@ The data is also passed from the `vulnerability_parser.py` to `report_generator.
   ],
   "vulnerabilities": [      // List of vulnerabilities found
     {
-      "host_ip": "10.0.220.12",
+      "host_ip": "192.0.2.11",
       "plugin_id": "19506",
       "name": "SSH Weak Algorithms Supported",
       "severity": "Medium",
@@ -299,88 +324,55 @@ The data is also passed from the `vulnerability_parser.py` to `report_generator.
 ```
 
 ## Kibana Visualizations
-
 The repository includes a file `kibana_visualizations.json` with example visualizations for vulnerability data. These visualizations help you quickly analyze metrics such as:
 - Number of critical vulnerabilities (system-wide and per host)
 - CVE density per host
 - Vulnerabilities over time
 - Most common types of vulnerabilities
 
-### How to Import Visualizations into Kibana
-
+### Importing Visualizations into Kibana
 Kibana requires NDJSON format for importing saved objects. To convert the provided JSON array to NDJSON:
+- **Using jq (recommended):**
+  ```bash
+  jq -c '.[]' kibana_visualizations.json > kibana_visualizations.ndjson
+  ```
+- **Using Python:**
+  ```python
+  import json
+  with open('kibana_visualizations.json') as f:
+      data = json.load(f)
+  with open('kibana_visualizations.ndjson', 'w') as f:
+      for obj in data:
+          f.write(json.dumps(obj) + '\n')
+  ```
+- **Or use an online tool:**
+  - https://json2ndjson.com/
 
-**Using jq (recommended):**
-```bash
-jq -c '.[]' kibana_visualizations.json > kibana_visualizations.ndjson
-```
-
-**Using Python:**
-```python
-import json
-with open('kibana_visualizations.json') as f:
-    data = json.load(f)
-with open('kibana_visualizations.ndjson', 'w') as f:
-    for obj in data:
-        f.write(json.dumps(obj) + '\n')
-```
-
-**Or use an online tool:**
-- https://json2ndjson.com/
-
-### Importing into Kibana
 1. Go to **Kibana → Stack Management → Saved Objects → Import**
 2. Select the `kibana_visualizations.ndjson` file
 3. The visualizations will be available for use and can be added to dashboards
+## Troubleshooting
+If you encounter issues:
+1. Check the logs in the Settings page for error messages
+2. Verify service connectivity in the Settings page
+3. Ensure your environment variables are correctly set in the .env file
 
-## Using the Application
-
+## Using the Application: Typical Workflow
 1. **Run a New Assessment**
    - Navigate to the "Scan Management" page
    - Select one or more organizations to scan from the multiselect dropdown
    - Alternatively, check "Scan All Organizations" to include all available organizations
    - Click "Run Assessment" to launch the vulnerability scans
    - Each organization is processed separately with individual scan results
-
 2. **Process Existing Scan**
    - Enter a Nessus scan ID to process an existing scan
    - Optionally select an organization for data enrichment
    - Click "Process Scan" to generate reports
-
 3. **Process Local CSV**
    - Upload a Nessus CSV export file
    - Optionally select an organization for data enrichment
    - Click "Process CSV" to generate reports
-
 4. **View and Download Reports**
    - Navigate to the "Reports" page
    - Download generated PDF reports
    - Alternatively, process raw scan data with organization-specific enrichment
-
-## NetBox Integration
-
-The application integrates with NetBox to retrieve target information and organize reports by tenant:
-
-1. **Target Discovery**
-   - IP addresses tagged with 'vuln-scan' in NetBox are automatically discovered
-   - Device information is retrieved from NetBox when available
-
-2. **Organization-Based Scanning**
-   - Select one or more organizations (tenants) to scan only their IP addresses
-   - Each organization is processed individually with separate scans
-   - Results include organization-specific information and contact details
-
-3. **Organization-Based Reporting**
-   - Tenant information is retrieved from NetBox to organize findings by organization
-   - Contact details are included in reports for easy notification of vulnerabilities
-   - Report filenames include organization names for easy identification
-
-4. **Contact Management**
-   - Primary contacts are identified from tenant assignments in NetBox
-   - Contact information is included in reports and Elasticsearch documents
-   - Priority contacts can be designated in NetBox for targeted reporting
-
-5. **Setting Up NetBox for EGIS**
-   - Tag IP addresses with 'vuln-scan' to include them in vulnerability assessments
-   - Associate IP addresses with tenants to enable organization-based scanning and reporting
-   - Add contact assignments to tenants to include contact information in reports
