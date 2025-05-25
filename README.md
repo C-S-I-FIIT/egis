@@ -345,8 +345,6 @@ Kibana requires NDJSON format for importing saved objects. To convert the provid
       for obj in data:
           f.write(json.dumps(obj) + '\n')
   ```
-- **Or use an online tool:**
-  - https://json2ndjson.com/
 
 1. Go to **Kibana → Stack Management → Saved Objects → Import**
 2. Select the `kibana_visualizations.ndjson` file
